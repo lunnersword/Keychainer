@@ -1,0 +1,6 @@
+framework module Pods_Keychainer_Tests {
+  umbrella header "Pods-Keychainer_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

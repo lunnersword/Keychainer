@@ -1,0 +1,6 @@
+framework module Keychainer {
+  umbrella header "Keychainer-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,6 +1,6 @@
 use_frameworks!
 
-platform :ios, '9.0'
+platform :ios, '14.0'
 
 target 'Keychainer_Example' do
   pod 'Keychainer', :path => '../'

@@ -1,0 +1,22 @@
+{
+  "name": "Keychainer",
+  "version": "0.1.0",
+  "summary": "A some wrap for keychain",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/lunnersword@163.com/Keychainer",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "lunnersword@163.com": "lunnersword@163.com"
+  },
+  "source": {
+    "git": "https://github.com/lunnersword@163.com/Keychainer.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "14.0"
+  },
+  "source_files": "Keychainer/Classes/**/*"
+}
