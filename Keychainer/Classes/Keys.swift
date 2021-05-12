@@ -1,5 +1,6 @@
 import Foundation
 
+// TODO: use enum to define keys
 /** Class Key Constant */
 let Class = String(kSecClass)
 

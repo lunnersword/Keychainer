@@ -73,9 +73,6 @@ public struct KeychainGenericPasswordOptions: GenericPasswordOptions {
     public var ignoreSynchronizable: Bool?
 
     public var securityClass: SecurityClass = .genericPassword
-
-    public mutating func update(with attributes: [String : Any]) {
-    }
 }
 
 public struct KeychainInternetPasswordOptions: InternetPaswordOptions {
@@ -111,10 +108,6 @@ public struct KeychainInternetPasswordOptions: InternetPaswordOptions {
     public var ignoreSynchronizable: Bool?
 
     public let securityClass: SecurityClass = .internetPassword
-
-    public mutating func update(with attributes: [String : Any]) {
-
-    }
 }
 
 extension KeychainOptions {
@@ -140,6 +133,21 @@ extension KeychainOptions {
 }
 
 extension BasePasswordOptions {
+    public func query(_ action: Action) throws -> [String : Any] {
+        switch action {
+            case .update, .delete:
+                return query()
+            case .read:
+                let queries = query()
+                return queries.merging(_searchOnlyQuery()) { (_, new) in new }
+            case .add:
+                let querys = query()
+                let accessControls = try _access()
+
+                let addQuery = querys.merging(accessControls) { (_, other)  in other }
+                return addQuery
+        }
+    }
 
     var _passwordOptionsString: String {
         var desc = _optionsString
@@ -187,6 +195,7 @@ extension BasePasswordOptions {
         } else if let synchronizable = self.synchronizable {
             query[AttributeSynchronizable] = synchronizable ? kCFBooleanTrue : kCFBooleanFalse
         }
+        query[UseAuthenticationContext] = authenticationContext
 
         query[AttributeLabel] = label
         query[AttributeComment] = comment
@@ -202,21 +211,36 @@ extension BasePasswordOptions {
         return query
     }
 
-    public func query(_ action: Action) throws -> [String : Any] {
-        switch action {
-            case .update, .delete:
-                return query()
-            case .read:
-                let queries = query()
-                return queries.merging(_searchOnlyQuery()) { (_, new) in new }
-            case .add:
-                let querys = query()
-                let accessControls = try _access()
-
-                let addQuery = querys.merging(accessControls) { (_, other)  in other }
-                return addQuery
+    mutating func _update(with attributes: [String : Any]) {
+        for (key, value) in attributes {
+            switch key {
+                case AttributeAccessible:
+                    guard let access = value as? String,
+                          let accessibility = Accessibility(rawValue: access) else {
+                        continue
+                    }
+                    self.accessibility = accessibility
+                case AttributeAccessGroup:
+                    self.accessGroup = value as? String
+                case UseAuthenticationContext:
+                    self.authenticationContext = value as? LAContext
+                case AttributeComment:
+                    self.comment = value as? String
+                case AttributeLabel:
+                    self.label = value as? String
+                case AttributeAccount:
+                    guard let account = value as? String else {
+                        continue
+                    }
+                    self.account = account
+                case AttributeSynchronizable:
+                    self.synchronizable = value as? Bool
+                default:
+                    continue
+            }
         }
     }
+
 }
 
 extension GenericPasswordOptions {
@@ -241,6 +265,14 @@ extension GenericPasswordOptions {
         query[AttributeService] = service
         query[AttributeGeneric] = generic
         return query
+    }
+
+    public mutating func update(with attributes: [String : Any]) {
+        _update(with: attributes)
+        if let service = attributes[AttributeService] as? String {
+            self.service = service
+        }
+        self.generic = attributes[AttributeGeneric] as? Data
     }
 }
 
@@ -274,6 +306,22 @@ extension InternetPaswordOptions {
         query[AttributeAuthenticationType] = authenticationType?.rawValue
         query[AttributeSecurityDomain] = securityDomain
         return query
+    }
+
+    public mutating func update(with attributes: [String : Any]) {
+        _update(with: attributes)
+        if let server = attributes[AttributeServer] as? String {
+            self.server = server
+        }
+        self.port = attributes[AttributePort] as? Int
+        if let proto = attributes[AttributeProtocol] as? String{
+            self.protocol = InternetProtocol(rawValue: proto)
+        }
+        if let authType = attributes[AttributeAuthenticationType] as? String {
+            self.authenticationType = InternetAuthenticationType(rawValue: authType)
+        }
+        self.securityDomain = attributes[AttributeSecurityDomain] as? String
+        self.path = attributes[AttributePath] as? String
     }
 }
 

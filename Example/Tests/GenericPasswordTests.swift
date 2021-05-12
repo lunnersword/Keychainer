@@ -4,10 +4,10 @@ import Quick
 import Nimble
 import Keychainer
 
-class TableOfContentsSpec: QuickSpec {
+class GenericPasswordSpec: QuickSpec {
     override func spec() {
         describe("these will fail") {
-
+            
             it("can do maths") {
                 expect(1) == 2
             }

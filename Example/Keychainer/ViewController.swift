@@ -223,8 +223,13 @@ class ViewController: UIViewController {
         //        else {
         //            throw KeychainError(status: errSecInternalError)
         //        }
+
+
+        let context = LAContext()
+        context.localizedReason = "Access your password on the keychain"
+
         let keychain = Keychain.internet(server: server)
-            .authenticationPrompt("Access your password on the keychain")
+            .authenticationContext(context)
 
 
         guard let item = try keychain.item(userName) else {
@@ -235,8 +240,11 @@ class ViewController: UIViewController {
 
     /// Reads the stored credentials for the given server.
     func readAllCredentials(server: String) throws -> [Credentials]? {
+        let context = LAContext()
+        context.localizedReason = "Access your password on the keychain"
+
         let keychain = Keychain.internet(server: server)
-            .authenticationPrompt("Access your password on the keychain")
+            .authenticationContext(context)
 
         guard let items = try keychain.allItems() else {
             return nil
