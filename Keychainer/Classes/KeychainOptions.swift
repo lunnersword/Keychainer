@@ -15,7 +15,6 @@ public protocol KeychainOptions: CustomStringConvertible, CustomDebugStringConve
 //    var data: Data? { get set }
 
     var authenticationContext: LAContext? { get set }
-    var authenticationPrompt: String? { get set }
     var shouldSkipAuthenticationUI: Bool? { get set }
     var authenticationPolicy: AuthenticationPolicy? { get set }
 
@@ -61,7 +60,6 @@ public struct KeychainGenericPasswordOptions: GenericPasswordOptions {
     public var authenticationPolicy: AuthenticationPolicy?
     // Only use this value with the SecItemCopyMatching(_:_:) function.
     public var shouldSkipAuthenticationUI: Bool?
-    public var authenticationPrompt: String?
 
     // custom option
     public var forceUpdate: Bool?
@@ -93,7 +91,6 @@ public struct KeychainInternetPasswordOptions: InternetPaswordOptions {
     public var authenticationContext: LAContext?
     public var shouldSkipAuthenticationUI: Bool?
     public var authenticationPolicy: AuthenticationPolicy?
-    public var authenticationPrompt: String?
 
     public var data: Data?
 
@@ -127,7 +124,6 @@ extension KeychainOptions {
         desc += "accessGroup: \(String(describing: accessGroup)),"
         desc += "accessibility: \(String(describing: accessibility)),"
         desc += "label: \(String(describing: label)),"
-        desc += "authenticationPrompt: \(String(describing: authenticationPrompt)),"
         desc += "shouldSkipAuthenticationUI: \(String(describing: shouldSkipAuthenticationUI)),"
         desc += "authenticationPolicy: \(String(describing: authenticationPolicy)),"
         desc += "}"
@@ -200,7 +196,7 @@ extension BasePasswordOptions {
 
     func _searchOnlyQuery() -> [String: Any] {
         var query: [String: Any] = [:]
-        query[UseOperationPrompt] = authenticationPrompt
+        // TODO: LAContext?
         let shouldSkip = shouldSkipAuthenticationUI ?? false
         query[UseAuthenticationUI] = shouldSkip ? UseAuthenticationUISkip : nil
         return query

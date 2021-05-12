@@ -184,20 +184,6 @@ public struct Keychain  {
         }
     }
 
-    @available(watchOS, unavailable)
-    public func authenticationPrompt(_ authenticationPrompt: String) -> Self {
-        switch type {
-            case .generic:
-                var generic: KeychainForGenericPassword = self.genericPassword
-                generic.options.authenticationPrompt = authenticationPrompt
-                return Keychain(generic: generic)
-            case .internet:
-                var internet: KeychainForInternetPassword = self.internetPassword
-                internet.options.authenticationPrompt = authenticationPrompt
-                return Keychain(internet: internet)
-        }
-    }
-
     public func skipAuthenticationUI(_ shouldSkip: Bool) -> Self {
         switch type {
             case .generic:

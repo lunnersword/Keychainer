@@ -50,8 +50,6 @@ let ValuePersistentRef = String(kSecValuePersistentRef)
 
 /** Other Constants */
 
-let UseOperationPrompt = String(kSecUseOperationPrompt)
-
 let UseAuthenticationUI = String(kSecUseAuthenticationUI)
 
 let UseAuthenticationContext = String(kSecUseAuthenticationContext)

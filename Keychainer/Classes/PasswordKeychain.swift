@@ -194,13 +194,6 @@ extension PasswordKeychain {
         return Self(options: options)
     }
 
-    @available(watchOS, unavailable)
-    public func authenticationPrompt(_ authenticationPrompt: String) -> Self {
-        var options = self.options
-        options.authenticationPrompt = authenticationPrompt
-        return Self(options: options)
-    }
-
     public func skipAuthenticationUI(_ shouldSkip: Bool) -> Self {
         var options = self.options
         options.shouldSkipAuthenticationUI = shouldSkip

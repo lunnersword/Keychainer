@@ -21,12 +21,13 @@ Pod::Spec.new do |s|
 TODO: Add long description of the pod here.
                        DESC
 
-  s.homepage         = 'https://github.com/lunnersword@163.com/Keychainer'
+  s.homepage         = 'https://github.com/lunnersword/Keychainer'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'lunnersword@163.com' => 'lunnersword@163.com' }
   s.source           = { :git => 'https://github.com/lunnersword@163.com/Keychainer.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.swift_version = '5.1'
 
   s.ios.deployment_target = '14.0'
 
