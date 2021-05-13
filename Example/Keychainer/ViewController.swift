@@ -226,7 +226,7 @@ class ViewController: UIViewController {
 
 
         let context = LAContext()
-        context.localizedReason = "Access your password on the keychain"
+        context.localizedReason = "Access your password on the keychain. I'm a custom propmt"
 
         let keychain = Keychain.internet(server: server)
             .authenticationContext(context)

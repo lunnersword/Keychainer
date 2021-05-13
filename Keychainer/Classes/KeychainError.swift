@@ -10,6 +10,8 @@ extension CFError {
     }
 }
 
+// TODO: 重新定义Error，现在显得太笨重了。
+
 public enum Status: OSStatus, Error {
     case success                            = 0
     case unimplemented                      = -4
