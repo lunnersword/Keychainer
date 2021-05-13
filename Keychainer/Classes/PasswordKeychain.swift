@@ -90,15 +90,6 @@ public protocol PasswordKeychain {
     func contains(_ key: String) throws -> Bool
 }
 
-extension Dictionary where Key == String, Value: Any {
-    var skipAuthUI: Bool {
-        guard let skipStr = self[UseAuthenticationUI] as? String else {
-            return false
-        }
-        return skipStr == UseAuthenticationUISkip
-    }
-}
-
 // MARK: -
 extension PasswordKeychain {
 
@@ -255,22 +246,24 @@ extension PasswordKeychain {
 
     func update(_ key: String, value: Data) throws {
         let query = try options.query(.update)
-        try update(key: key, data: value, query: query)
+        let attributes = try options.query(.add)
+        try update(key: key, data: value, query: query, attributes: attributes)
     }
 
     func update(_ key: String, value: String) throws {
         let query = try options.query(.update)
-        try update(key: key, string: value, query: query)
+        let attributes = try options.query(.add)
+        try update(key: key, string: value, query: query, attributes: attributes)
     }
 
     func set(_ key: String, value: Data) throws {
-        let query = try options.query(.read)
+        let query = try options.query(.update)
         let addQuery = try options.query(.add)
         try set(key: key, data: value, query: query, addQuery: addQuery)
     }
 
     func set(_ key: String, value: String) throws {
-        let query = try options.query(.read)
+        let query = try options.query(.update)
         let addQuery = try options.query(.add)
         try set(key: key, string: value, query: query, addQuery: addQuery)
     }
@@ -396,6 +389,7 @@ extension PasswordKeychain {
         var query = query
         query[AttributeAccount] = key
         query[UseAuthenticationUI] = skipAuthUI ? UseAuthenticationUISkip : nil
+
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         switch status {
             case errSecSuccess:
@@ -418,19 +412,19 @@ extension PasswordKeychain {
     }
 
     // MARK: - update item
-    func update(key: String, data: Data, query: [String: Any]) throws {
+    func update(key: String, data: Data, query: [String: Any], attributes: [String: Any]) throws {
         let skip = query.skipAuthUI
         let existing = try contains(key: key, query: query, skipAuthUI: skip)
 
         guard existing else {
             throw doError(status: Status.itemNotFound.rawValue)
         }
-        try doUpdate(key: key, value: data, query: query)
+        try doUpdate(key: key, value: data, query: query, attributes: attributes)
     }
 
-    func update(key: String, string: String, query: [String: Any]) throws {
+    func update(key: String, string: String, query: [String: Any], attributes: [String: Any]) throws {
         let data = try convertToData(string)
-        try update(key: key, data: data, query:query)
+        try update(key: key, data: data, query:query, attributes: attributes)
     }
 
     // MARK: - set item
@@ -438,7 +432,7 @@ extension PasswordKeychain {
         let skip = query.skipAuthUI
         let existing = try contains(key: key, query: query, skipAuthUI: skip)
         if existing {
-            try doUpdate(key: key, value: data, query: query)
+            try doUpdate(key: key, value: data, query: query, attributes: addQuery)
         } else {
             try doAdd(key: key, value: data, query: addQuery)
         }
@@ -468,15 +462,14 @@ extension PasswordKeychain {
         return data
     }
 
-    private func doUpdate(key: String, value: Data, query: [String: Any]) throws {
-        var search = query
-        search[AttributeAccount] = key
+    private func doUpdate(key: String, value: Data, query: [String: Any], attributes: [String: Any]) throws {
+        var query = query
+        query[AttributeAccount] = key
 
-        var attributes = [String: Any]()
-        attributes[AttributeAccount] = key
+        var attributes = attributes.modifyingAttributes
         attributes[ValueData] = value
 
-        let status = SecItemUpdate(search as CFDictionary, attributes as CFDictionary)
+        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
         if status != errSecSuccess {
             throw doError(status: status)
         }
@@ -499,5 +492,30 @@ extension PasswordKeychain {
             print("\(type(of: self)) tOSStatus error:[\(error.errorCode)] \(error.description)")
         }
         return error
+    }
+}
+
+extension Dictionary where Key == String, Value: Any {
+    var skipAuthUI: Bool {
+        guard let skipStr = self[UseAuthenticationUI] as? String else {
+            return false
+        }
+        return skipStr == UseAuthenticationUISkip
+    }
+    var modifyingAttributes: [String: Any] {
+        var attributes = [String: Any]()
+        attributes[AttributeDescription] = self[AttributeDescription]
+        attributes[AttributeComment] = self[AttributeComment]
+        attributes[AttributeLabel] = self[AttributeLabel]
+        attributes[AttributeAccount] = self[AttributeAccount]
+        attributes[AttributeService] = self[AttributeService]
+        attributes[AttributeGeneric] = self[AttributeGeneric]
+        attributes[AttributeSynchronizable] = self[AttributeSynchronizable]
+        attributes[AttributeServer] = self[AttributeServer]
+        attributes[AttributeProtocol] = self[AttributeProtocol]
+        attributes[AttributeAuthenticationType] = self[AttributeAuthenticationType]
+        attributes[AttributePort] = self[AttributePort]
+        attributes[AttributePath] = self[AttributePath] 
+        return attributes
     }
 }

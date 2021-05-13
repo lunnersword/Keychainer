@@ -19,9 +19,9 @@ public protocol KeychainOptions: CustomStringConvertible, CustomDebugStringConve
     var authenticationPolicy: AuthenticationPolicy? { get set }
 
     mutating func update(with attributes: [String: Any])
-
-    func query() -> [String: Any]
     func query(_ action: Action) throws -> [String: Any]
+    func query() -> [String: Any]
+    func updateQuery() -> [String: Any]
 }
 
 public protocol BasePasswordOptions: KeychainOptions {
@@ -135,7 +135,9 @@ extension KeychainOptions {
 extension BasePasswordOptions {
     public func query(_ action: Action) throws -> [String : Any] {
         switch action {
-            case .update, .delete:
+            case .update:
+                return updateQuery()
+            case .delete:
                 return query()
             case .read:
                 let queries = query()
@@ -185,6 +187,7 @@ extension BasePasswordOptions {
         }
         return attributes
     }
+
 
     func _query() -> [String: Any] {
         var query = [String: Any]()
@@ -266,6 +269,19 @@ extension GenericPasswordOptions {
         query[AttributeGeneric] = generic
         return query
     }
+    // only use Class, key, service, accessGroup and AttributeSynchronizable. to identify an item when the query is for modifying
+    public func updateQuery() -> [String: Any] {
+        var query = [String: Any]()
+        query[Class] = securityClass.rawValue
+        query[AttributeAccessGroup] = accessGroup
+        query[AttributeService] = service
+        if ignoreSynchronizable == .some(true) {
+            query[AttributeSynchronizable] = SynchronizableAny
+        } else if let synchronizable = self.synchronizable {
+            query[AttributeSynchronizable] = synchronizable ? kCFBooleanTrue : kCFBooleanFalse
+        }
+        return query
+    }
 
     public mutating func update(with attributes: [String : Any]) {
         _update(with: attributes)
@@ -305,6 +321,20 @@ extension InternetPaswordOptions {
         query[AttributeProtocol] = `protocol`?.rawValue
         query[AttributeAuthenticationType] = authenticationType?.rawValue
         query[AttributeSecurityDomain] = securityDomain
+        return query
+    }
+
+    // only use Class, key, server, accessGroup and AttributeSynchronizable. to identify an item when the query is for modifying
+    public func updateQuery() -> [String: Any] {
+        var query = [String: Any]()
+        query[Class] = securityClass.rawValue
+        query[AttributeAccessGroup] = accessGroup
+        query[AttributeServer] = server
+        if ignoreSynchronizable == .some(true) {
+            query[AttributeSynchronizable] = SynchronizableAny
+        } else if let synchronizable = self.synchronizable {
+            query[AttributeSynchronizable] = synchronizable ? kCFBooleanTrue : kCFBooleanFalse
+        }
         return query
     }
 
