@@ -1,6 +1,37 @@
 import Foundation
 
 // TODO: use enum to define keys
+enum AttributeKey {
+    enum password {
+        static let accessGroup = String(kSecAttrAccessGroup)
+        static let accessible = String(kSecAttrAccessible)
+        static let creationDate = String(kSecAttrCreationDate)
+        static let modificationDate = String(kSecAttrModificationDate)
+        static let description = String(kSecAttrDescription)
+        static let comment = String(kSecAttrComment)
+        static let creator = String(kSecAttrCreator)
+        static let type = String(kSecAttrType)
+        static let label = String(kSecAttrLabel)
+        static let isInvisible = String(kSecAttrIsInvisible)
+        static let isNegative = String(kSecAttrIsNegative)
+        static let account = String(kSecAttrAccount)
+        static let synchronizable = String(kSecAttrSynchronizable)
+        enum generic {
+            static let accessControl = String(kSecAttrAccessControl)
+            static let service = String(kSecAttrService)
+            static let generic = String(kSecAttrGeneric)
+        }
+        enum internet {
+            static let server = String(kSecAttrServer)
+            static let securityDomain = String(kSecAttrSecurityDomain)
+            static let `protocol` = String(kSecAttrProtocol)
+            static let authenticationType = String(kSecAttrAuthenticationType)
+            static let port = String(kSecAttrPort)
+            static let path = String(kSecAttrPath)
+        }
+    }
+}
+
 /** Class Key Constant */
 let Class = String(kSecClass)
 
