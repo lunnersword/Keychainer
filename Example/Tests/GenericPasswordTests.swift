@@ -22,7 +22,7 @@ struct Account: Equatable {
     }
 }
 
-extension KeychainItem where Attributes == GenericPasswordAttributes {
+extension KeychainItem {
     var account: Account? {
         guard let account = attributes?.account,
               let passwordData = data,
