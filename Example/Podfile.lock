@@ -1,12 +1,12 @@
 PODS:
   - Keychainer (0.1.0)
-  - Nimble (8.0.9)
-  - Quick (2.2.1)
+  - Nimble (11.2.1)
+  - Quick (6.1.0)
 
 DEPENDENCIES:
   - Keychainer (from `../`)
-  - Nimble (~> 8.0.7)
-  - Quick (~> 2.2.0)
+  - Nimble (~> 11.2.1)
+  - Quick (~> 6.1.0)
 
 SPEC REPOS:
   trunk:
@@ -18,10 +18,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Keychainer: c37153516615cbc13a72d601f84e85e9c70482cc
-  Nimble: 98b888285a615fd34f20e61753cf58ea1402bde4
-  Quick: f5754d69b7013f5864c29aab9ae6f0c79c5bc200
+  Keychainer: 9af46b4cfa17fd9e8e6a6fd307a2993d22ae5c54
+  Nimble: 516ac503a0fafaa8e41dbb4a70a61be421fa893a
+  Quick: 6676ffb409bf04abba2ff23902af2407bfc6ac90
 
-PODFILE CHECKSUM: 20ff119eccac34b30c6b97ac1625e132bd4ba1ed
+PODFILE CHECKSUM: 6417fa9d71631c07696d071edf248e48313c5a2c
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.3

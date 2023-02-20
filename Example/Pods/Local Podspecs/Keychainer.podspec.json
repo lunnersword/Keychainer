@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "summary": "A some wrap for keychain",
   "description": "TODO: Add long description of the pod here.",
-  "homepage": "https://github.com/lunnersword@163.com/Keychainer",
+  "homepage": "https://github.com/lunnersword/Keychainer",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
@@ -15,8 +15,10 @@
     "git": "https://github.com/lunnersword@163.com/Keychainer.git",
     "tag": "0.1.0"
   },
+  "swift_versions": "5.1",
   "platforms": {
     "ios": "14.0"
   },
-  "source_files": "Keychainer/Classes/**/*"
+  "source_files": "Keychainer/Classes/**/*",
+  "swift_version": "5.1"
 }
