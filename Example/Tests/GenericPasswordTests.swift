@@ -8,38 +8,63 @@ import LocalAuthentication
 struct Account: Equatable {
     var username: String
     var password: String
+}
 
-    static func mockAccounts(_ count: UInt) -> [Account] {
+struct KeyData: Equatable {
+    let network: String
+    let sessionId: String
+    let curve: Int
+    let data: Data
+    let publicKey: String
+
+    static func mockAccounts(_ count: Int) -> [Account] {
         var cres: [Account] = []
         for i in 0..<count {
-            let cre = Account(username: "lunner#\(i)", password: "lunner#\(i)password")
+            guard let keydata = "password \(i)".data(using: .utf8, allowLossyConversion: false) else {
+                continue
+            }
+            let cre = Account(network: "network \(i)", sessionId: "sessionId \(i)", curve: i, data: keydata, publicKey: "publicKey +\(i)")
             cres.append(cre)
         }
         return cres
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.username == rhs.username && lhs.password == rhs.password
+        return lhs.sessionId == rhs.sessionId && lhs.data == rhs.data
     }
 }
 
 extension KeychainItem {
     var account: Account? {
-        guard let account = attributes?.account,
-              let passwordData = data,
-              let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
+        guard let network = attributes?.label,
+              let sessionId = attributes?.account,
+              let curve = attributes?.type,
+              let keyData = data,
+              let publicKey = attributes?.comment else {
             return nil
         }
-        return Account(username: account, password: password)
+        return Account(network: network, sessionId: sessionId, curve: curve, data: keyData, publicKey: publicKey)
     }
+//    var account: Account? {
+//        guard let account = attributes?.account,
+//              let passwordData = data,
+//              let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
+//            return nil
+//        }
+//        return Account(username: account, password: password)
+//    }
 }
 
 class GenericPasswordSpec: QuickSpec {
     override func spec() {
+        describe("save Key") {
+            let service = "lunnersword.Keychain.Sign.test"
+            var keychain = Keychain.generic(service: service)
+        }
         describe("generic") {
             let service = "lunnersword.Keychain.test"
             var keychain = Keychain.generic(service: service)
             let accounts = Account.mockAccounts(5)
-            let accountNotInKeychain = Account(username: "NotExistingKey", password: "passwordshouldnotbeenstored")
+            let accountNotInKeychain = Account(network: "unkonw", sessionId: "NotExistingID", curve: 0, data: Data(bytes: [1, 2, 3]), publicKey: "non")
             beforeSuite {
                 let context = LAContext()
                 context.touchIDAuthenticationAllowableReuseDuration = 10

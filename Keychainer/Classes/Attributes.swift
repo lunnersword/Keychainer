@@ -14,7 +14,7 @@ public protocol PasswordAttributes: BaseAttributes, CustomStringConvertible, Cus
     var attributeDescription: String? { get }
     var comment: String? { get }
     var creator: String? { get }
-    var type: String? { get }
+    var type: Int? { get }
     var label: String? { get }
     var isInvisible: Bool? { get }
     var isNegative: Bool? { get }
@@ -89,7 +89,7 @@ public struct GenericPasswordAttributes: PasswordAttributes {
     public var attributeDescription: String?
     public var comment: String?
     public var creator: String?
-    public var type: String?
+    public var type: Int?
     public var label: String?
     public var isInvisible: Bool?
     public var isNegative: Bool?
@@ -109,7 +109,7 @@ public struct GenericPasswordAttributes: PasswordAttributes {
         self.attributeDescription = attributes[AttributeDescription] as? String
         self.comment = attributes[AttributeComment] as? String
         self.creator = attributes[AttributeCreator] as? String
-        self.type = attributes[AttributeType] as? String
+        self.type = attributes[AttributeType] as? Int
         self.label = attributes[AttributeLabel] as? String
         self.isInvisible = attributes[AttributeIsInvisible] as? Bool
         self.isNegative = attributes[AttributeIsNegative] as? Bool
@@ -145,7 +145,7 @@ public struct InternetPasswordAttributes: PasswordAttributes {
     public var attributeDescription: String?
     public var comment: String?
     public var creator: String?
-    public var type: String?
+    public var type: Int?
     public var label: String?
     public var isInvisible: Bool?
     public var isNegative: Bool?
@@ -166,7 +166,7 @@ public struct InternetPasswordAttributes: PasswordAttributes {
         self.attributeDescription = attributes[AttributeDescription] as? String
         self.comment = attributes[AttributeComment] as? String
         self.creator = attributes[AttributeCreator] as? String
-        self.type = attributes[AttributeType] as? String
+        self.type = attributes[AttributeType] as? Int
         self.label = attributes[AttributeLabel] as? String
         self.isInvisible = attributes[AttributeIsInvisible] as? Bool
         self.isNegative = attributes[AttributeIsNegative] as? Bool
