@@ -8,6 +8,18 @@ import LocalAuthentication
 struct Account: Equatable {
     var username: String
     var password: String
+
+    static func mockAccounts(_ count: UInt) -> [Account] {
+        var cres: [Account] = []
+        for i in 0..<count {
+            let cre = Account(username: "lunner#\(i)", password: "lunner#\(i)password")
+            cres.append(cre)
+        }
+        return cres
+    }
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.username == rhs.username && lhs.password == rhs.password
+    }
 }
 
 struct KeyData: Equatable {
@@ -17,24 +29,33 @@ struct KeyData: Equatable {
     let data: Data
     let publicKey: String
 
-    static func mockAccounts(_ count: Int) -> [Account] {
-        var cres: [Account] = []
+    static func mockKeyDatas(_ count: Int) -> [KeyData] {
+        var cres: [KeyData] = []
         for i in 0..<count {
             guard let keydata = "password \(i)".data(using: .utf8, allowLossyConversion: false) else {
                 continue
             }
-            let cre = Account(network: "network \(i)", sessionId: "sessionId \(i)", curve: i, data: keydata, publicKey: "publicKey +\(i)")
+            let cre = KeyData(network: "network \(i)", sessionId: "sessionId \(i)", curve: i, data: keydata, publicKey: "publicKey +\(i)")
             cres.append(cre)
         }
         return cres
     }
     static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.sessionId == rhs.sessionId && lhs.data == rhs.data
+        return lhs.sessionId == rhs.sessionId && lhs.data == rhs.data && lhs.curve == rhs.curve
     }
 }
 
 extension KeychainItem {
     var account: Account? {
+        guard let account = attributes?.account,
+              let passwordData = data,
+              let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
+            return nil
+        }
+        return Account(username: account, password: password)
+    }
+
+    var keyData: KeyData? {
         guard let network = attributes?.label,
               let sessionId = attributes?.account,
               let curve = attributes?.type,
@@ -42,29 +63,46 @@ extension KeychainItem {
               let publicKey = attributes?.comment else {
             return nil
         }
-        return Account(network: network, sessionId: sessionId, curve: curve, data: keyData, publicKey: publicKey)
+        return KeyData(network: network, sessionId: sessionId, curve: curve, data: keyData, publicKey: publicKey)
     }
-//    var account: Account? {
-//        guard let account = attributes?.account,
-//              let passwordData = data,
-//              let password = String(data: passwordData, encoding: String.Encoding.utf8) else {
-//            return nil
-//        }
-//        return Account(username: account, password: password)
-//    }
+}
+
+extension Keychain {
+    static func add(_ key: KeyData) throws {
+        let service = "lunnersword.Keychain.Sign.test"
+        let keychain = Keychain.generic(service: service)
+        try keychain.label(key.network)
+            .type(key.curve)
+            .comment(key.publicKey)
+            .add(key.sessionId, value: key.data)
+    }
+
+    static func update(_ key: KeyData) throws {
+        let service = "lunnersword.Keychain.Sign.test"
+        let keychain = Keychain.generic(service: service)
+        try keychain.label(key.network)
+            .type(key.curve)
+            .comment(key.publicKey)
+            .update(key.sessionId, value: key.data)
+    }
+
+    static func set(_ key: KeyData) throws {
+        let service = "lunnersword.Keychain.Sign.test"
+        let keychain = Keychain.generic(service: service)
+        try keychain.label(key.network)
+            .type(key.curve)
+            .comment(key.publicKey)
+            .set(key.sessionId, value: key.data)
+    }
 }
 
 class GenericPasswordSpec: QuickSpec {
     override func spec() {
-        describe("save Key") {
-            let service = "lunnersword.Keychain.Sign.test"
-            var keychain = Keychain.generic(service: service)
-        }
         describe("generic") {
             let service = "lunnersword.Keychain.test"
             var keychain = Keychain.generic(service: service)
             let accounts = Account.mockAccounts(5)
-            let accountNotInKeychain = Account(network: "unkonw", sessionId: "NotExistingID", curve: 0, data: Data(bytes: [1, 2, 3]), publicKey: "non")
+            let accountNotInKeychain = Account(username: "NotExistingKey", password: "passwordshouldnotbeenstored")
             beforeSuite {
                 let context = LAContext()
                 context.touchIDAuthenticationAllowableReuseDuration = 10
@@ -77,7 +115,7 @@ class GenericPasswordSpec: QuickSpec {
                 do {
                     try keychain.deleteAll()
                 } catch {
-                    print("afterEach failed: \(error)")
+                    print("afterSuite failed: \(error)")
                 }
             }
 
@@ -470,6 +508,254 @@ class GenericPasswordSpec: QuickSpec {
                 }
 
             }
+        }
+
+        describe("KeyData") {
+            let service = "lunnersword.Keychain.Sign.test"
+            var keychain = Keychain.generic(service: service)
+            let keyDatas = KeyData.mockKeyDatas(50)
+            let keyNotInKeychain = KeyData(network: "unkonw", sessionId: "NotExistingID", curve: 0, data: Data(bytes: [1, 2, 3]), publicKey: "non")
+
+            beforeSuite {
+                let context = LAContext()
+                context.touchIDAuthenticationAllowableReuseDuration = 5
+
+                keychain = keychain
+                    .accessibility(.whenUnlockedThisDeviceOnly, authenticationPolicy: .userPresence)
+                    .authenticationContext(context)
+            }
+            afterSuite {
+                do {
+                    try keychain.deleteAll()
+                } catch {
+                    print("afterSuite failed: \(error)")
+                }
+            }
+
+            beforeEach {
+                for key in keyDatas {
+                    do {
+                        try keychain.label(key.network)
+                            .type(key.curve)
+                            .comment(key.publicKey)
+                            .add(key.sessionId, value: key.data)
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+            }
+
+            afterEach {
+                do {
+                    try keychain.deleteAll()
+                } catch {
+                    expect(error).to(beNil())
+                }
+            }
+
+            context("add and read Keys") {
+                it("add items") {
+                    try? keychain.deleteAll()
+
+                    for key in keyDatas {
+                        do {
+                            try Keychain.add(key)
+                        } catch {
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+                it("add duplicate items") {
+                    for key in keyDatas {
+                        do {
+                            try Keychain.add(key)
+                        } catch {
+                            expect(error).to(beAnInstanceOf(Status.self))
+                            let status = error as! Status
+                            expect(status).to(equal(.duplicateItem))
+                        }
+                    }
+                }
+                it("read item by key(sessionId)") {
+                    var i = 0
+                    for key in keyDatas {
+                        do {
+                            let keyItem = try keychain.item(key.sessionId)?.keyData
+                            expect(keyItem).notTo(beNil())
+                            expect(keyItem?.sessionId).to(equal(key.sessionId))
+                            expect(keyItem?.data).to(equal(key.data))
+                            expect(keyItem?.publicKey).to(equal(key.publicKey))
+                            expect(keyItem?.network).to(equal(key.network))
+                            expect(keyItem?.curve).to(equal(key.curve))
+                            expect(keyItem?.curve).to(equal(i))
+                        } catch {
+                            expect(error).to(beNil())
+                        }
+                        i += 1
+                    }
+                }
+
+                it("read all items") {
+                    do {
+                        let gotKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(gotKeys).notTo(beNil())
+                        expect(gotKeys?.count).to(equal(keyDatas.count))
+                        expect(gotKeys).to(equal(keyDatas))
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+
+                it("read item not existing") {
+                    do {
+                        let account = try keychain.item("notExistingKey")?.keyData
+                        expect(account).to((beNil()))
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+            }
+
+            context("update and delete items") {
+                it("update key") {
+                    for key in keyDatas {
+                        do {
+                            let sessionId = key.sessionId
+                            var data = key.data
+                            data.append(contentsOf: [7, 77])
+                            let newKey = KeyData(network: key.network + "updated", sessionId: key.sessionId, curve: 22, data: data, publicKey: key.publicKey + "updated")
+                            try Keychain.update(newKey)
+                            let updated = try keychain.item(sessionId)?.keyData
+                            expect(updated).notTo(beNil())
+                            expect(updated).to(equal(newKey))
+                            expect(updated?.sessionId).to(equal(sessionId))
+                            expect(updated?.curve).to(equal(22))
+                            expect(updated?.network).to(equal(key.network + "updated"))
+                            expect(updated?.publicKey).to(equal(key.publicKey + "updated"))
+                            //                         update back
+                            try keychain.update(sessionId, value: key.data)
+                            let backed = try keychain.item(sessionId)?.keyData
+                            expect(backed).notTo(beNil())
+                            expect(backed?.sessionId).to(equal(key.sessionId))
+                            expect(backed?.data).to(equal(key.data))
+                        } catch {
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                it("update item not existing") {
+                    do {
+                        try keychain.update(keyNotInKeychain.sessionId, value: keyNotInKeychain.data)
+                        let shouldNotUpdated = try keychain.item(keyNotInKeychain.sessionId)?.account
+                        expect(shouldNotUpdated).to(beNil())
+                    } catch {
+                        expect(error).to(beAnInstanceOf(Status.self))
+                        let status = error as! Status
+                        expect(status).to(equal(.itemNotFound))
+                    }
+                }
+
+                it("delete item") {
+                    for key in keyDatas {
+                        do {
+                            try keychain.delete(key.sessionId)
+                            let deleted = try keychain.item(key.sessionId)?.keyData
+                            expect(deleted).to(beNil())
+
+                        } catch {
+                            expect(error).notTo(beNil())
+                        }
+                    }
+
+                    do {
+                        let gotKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(gotKeys?.count) == 0
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+
+                it("delete item not existing") {
+                    do {
+                        // if item not existing, keychain will do nothing.
+                        try keychain.delete(keyNotInKeychain.sessionId)
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+
+                it("delete all") {
+                    do {
+                        let gotKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(gotKeys?.count) == 50
+
+                        try keychain.deleteAll()
+                        let deletedKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(deletedKeys?.count) == 0
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+            }
+
+            context("set item") {
+                it("set new item") {
+                    do {
+                        let newAccount = Account(username: "I'm a new account", password: "new account's password")
+                        let newKey = KeyData(network: "I'm a new key", sessionId: "NewSessionId", curve: 199, data: Data(bytes: [1, 2, 3, 4]), publicKey: "newnewnew")
+
+                        try Keychain.set(newKey)
+                        let got = try keychain.item(newKey.sessionId)?.keyData
+                        expect(got).toNot(beNil())
+                        expect(got) == newKey
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+
+                it("set existing item with new value") {
+                    do {
+                        let gotKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(gotKeys?.count) == 50
+                        expect(gotKeys) == keyDatas
+
+                        for key in keyDatas {
+                            var newData = key.data
+                            newData.append(contentsOf: [1, 3, 5, 7])
+                            let new = KeyData(network: key.network + "seted", sessionId: key.sessionId, curve: key.curve + 100, data: newData, publicKey: key.publicKey + "seted")
+                            try Keychain.set(new)
+                            let got = try keychain.item(key.sessionId)?.keyData
+                            expect(got).notTo(beNil())
+                            expect(got) == new
+                            expect(got?.network) == key.network + "seted"
+                        }
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+
+                it("set existing item with old value") {
+                    do {
+                        let gotKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(gotKeys?.count) == 50
+                        expect(gotKeys) == keyDatas
+
+                        for key in keyDatas {
+                            try Keychain.set(key)
+                            let got = try keychain.item(key.sessionId)?.keyData
+                            expect(got).notTo(beNil())
+                            expect(got) == key
+                        }
+
+                        let setedKeys = try keychain.allItems()?.compactMap{ $0.keyData }
+                        expect(setedKeys) == keyDatas
+                    } catch {
+                        expect(error).to(beNil())
+                    }
+                }
+            }
+
         }
     }
 }

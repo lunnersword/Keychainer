@@ -29,6 +29,7 @@ public protocol BasePasswordOptions: KeychainOptions {
 
     var comment: String? { get set }
     var label: String? { get set }
+    var type: Int? { get set }
 
     var synchronizable: Bool? { get set }
     var ignoreSynchronizable: Bool? { get set }
@@ -69,6 +70,7 @@ public struct KeychainGenericPasswordOptions: GenericPasswordOptions {
     public var generic: Data?
     public var account: String = ""
     public var label: String?
+    public var type: Int?
     public var synchronizable: Bool?
     public var ignoreSynchronizable: Bool?
 
@@ -80,8 +82,8 @@ public struct KeychainInternetPasswordOptions: InternetPaswordOptions {
     public var server: String
 
     public var comment: String?
-
     public var label: String?
+    public var type: Int?
 
     public var accessibility: Accessibility = .afterFirstUnlock
 
@@ -202,6 +204,7 @@ extension BasePasswordOptions {
 
         query[AttributeLabel] = label
         query[AttributeComment] = comment
+        query[AttributeType] = type
 
         return query
     }
@@ -217,29 +220,31 @@ extension BasePasswordOptions {
     mutating func _update(with attributes: [String : Any]) {
         for (key, value) in attributes {
             switch key {
-                case AttributeAccessible:
-                    guard let access = value as? String,
-                          let accessibility = Accessibility(rawValue: access) else {
-                        continue
-                    }
-                    self.accessibility = accessibility
-                case AttributeAccessGroup:
-                    self.accessGroup = value as? String
-                case UseAuthenticationContext:
-                    self.authenticationContext = value as? LAContext
-                case AttributeComment:
-                    self.comment = value as? String
-                case AttributeLabel:
-                    self.label = value as? String
-                case AttributeAccount:
-                    guard let account = value as? String else {
-                        continue
-                    }
-                    self.account = account
-                case AttributeSynchronizable:
-                    self.synchronizable = value as? Bool
-                default:
+            case AttributeAccessible:
+                guard let access = value as? String,
+                      let accessibility = Accessibility(rawValue: access) else {
                     continue
+                }
+                self.accessibility = accessibility
+            case AttributeAccessGroup:
+                self.accessGroup = value as? String
+            case UseAuthenticationContext:
+                self.authenticationContext = value as? LAContext
+            case AttributeComment:
+                self.comment = value as? String
+            case AttributeLabel:
+                self.label = value as? String
+            case AttributeType:
+                self.type = value as? Int
+            case AttributeAccount:
+                guard let account = value as? String else {
+                    continue
+                }
+                self.account = account
+            case AttributeSynchronizable:
+                self.synchronizable = value as? Bool
+            default:
+                continue
             }
         }
     }

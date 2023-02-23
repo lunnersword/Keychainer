@@ -158,6 +158,19 @@ public struct Keychain  {
         }
     }
 
+    public func type(_ type: Int) -> Self {
+        switch self.type {
+        case .generic:
+            var generic: KeychainForGenericPassword = self.genericPassword
+            generic.options.type = type
+            return Keychain(generic: generic)
+        case .internet:
+            var internet: KeychainForInternetPassword = self.internetPassword
+            internet.options.type = type
+            return Keychain(internet: internet)
+        }
+    }
+
     public func comment(_ comment: String) -> Self {
         switch type {
             case .generic:

@@ -103,7 +103,7 @@ extension PasswordKeychain {
             return nil
         }
         guard let genericOptions = options as? GenericPasswordOptions else {
-            print("Unexpected error: options expected to be GenericPasswordOptions, but \(type(of: options))")
+            print("Unexpected error: options expected to be GenericPasswordOptions, but \(Swift.type(of: options))")
             return nil
         }
         var options = genericOptions
@@ -125,7 +125,7 @@ extension PasswordKeychain {
             return nil
         }
         guard let internetOptions = options as? InternetPaswordOptions else {
-            print("Unexpected error: options expected to be InternetPaswordOptions, but \(type(of: options))")
+            print("Unexpected error: options expected to be InternetPaswordOptions, but \(Swift.type(of: options))")
             return nil
         }
         var options = internetOptions
@@ -170,6 +170,12 @@ extension PasswordKeychain {
     public func label(_ label: String) -> Self {
         var options = self.options
         options.label = label
+        return Self(options: options)
+    }
+
+    public func type(_ type: Int?) -> Self {
+        var options = self.options
+        options.type = type
         return Self(options: options)
     }
 
@@ -489,7 +495,7 @@ extension PasswordKeychain {
     fileprivate func doError(status: OSStatus) -> Error {
         let error = Status(status: status)
         if error != .userCanceled {
-            print("\(type(of: self)) tOSStatus error:[\(error.errorCode)] \(error.description)")
+            print("\(Swift.type(of: self)) tOSStatus error:[\(error.errorCode)] \(error.description)")
         }
         return error
     }
@@ -507,6 +513,7 @@ extension Dictionary where Key == String, Value: Any {
         attributes[AttributeDescription] = self[AttributeDescription]
         attributes[AttributeComment] = self[AttributeComment]
         attributes[AttributeLabel] = self[AttributeLabel]
+        attributes[AttributeType] = self[AttributeType]
         attributes[AttributeAccount] = self[AttributeAccount]
         attributes[AttributeService] = self[AttributeService]
         attributes[AttributeGeneric] = self[AttributeGeneric]
