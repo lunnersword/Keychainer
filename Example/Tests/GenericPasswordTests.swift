@@ -68,6 +68,12 @@ extension KeychainItem {
 }
 
 extension Keychain {
+    static func getKeyData(sessionId: String) throws -> KeyData? {
+        let service = "lunnersword.Keychain.Sign.test"
+        let keychain = Keychain.generic(service: service)
+        return try keychain.item(sessionId)?.keyData
+    }
+
     static func add(_ key: KeyData) throws {
         let service = "lunnersword.Keychain.Sign.test"
         let keychain = Keychain.generic(service: service)
@@ -580,7 +586,7 @@ class GenericPasswordSpec: QuickSpec {
                     var i = 0
                     for key in keyDatas {
                         do {
-                            let keyItem = try keychain.item(key.sessionId)?.keyData
+                            let keyItem = try Keychain.getKeyData(sessionId: key.sessionId)
                             expect(keyItem).notTo(beNil())
                             expect(keyItem?.sessionId).to(equal(key.sessionId))
                             expect(keyItem?.data).to(equal(key.data))
@@ -608,8 +614,8 @@ class GenericPasswordSpec: QuickSpec {
 
                 it("read item not existing") {
                     do {
-                        let account = try keychain.item("notExistingKey")?.keyData
-                        expect(account).to((beNil()))
+                        let keyItem = try Keychain.getKeyData(sessionId: "notExistingKey")
+                        expect(keyItem).to((beNil()))
                     } catch {
                         expect(error).to(beNil())
                     }
