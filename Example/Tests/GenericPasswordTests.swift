@@ -77,6 +77,7 @@ extension Keychain {
     static func add(_ key: KeyData) throws {
         let service = "lunnersword.Keychain.Sign.test"
         let keychain = Keychain.generic(service: service)
+            .accessibility(.whenUnlockedThisDeviceOnly, authenticationPolicy: .userPresence)
         try keychain.label(key.network)
             .type(key.curve)
             .comment(key.publicKey)
