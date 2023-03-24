@@ -117,7 +117,7 @@ public struct Keychain  {
         }
     }
 
-    public func accessibility(_ accessibility: Accessibility, authenticationPolicy: AuthenticationPolicy) -> Self {
+    public func accessibility(_ accessibility: Accessibility, authenticationPolicy: AuthenticationPolicy?) -> Self {
         switch type {
             case .generic:
                 var generic: KeychainForGenericPassword = self.genericPassword

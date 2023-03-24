@@ -148,7 +148,7 @@ extension PasswordKeychain {
         return Self(options: options)
     }
 
-    public func accessibility(_ accessibility: Accessibility, authenticationPolicy: AuthenticationPolicy) -> Self {
+    public func accessibility(_ accessibility: Accessibility, authenticationPolicy: AuthenticationPolicy?) -> Self {
         var options = self.options
         options.accessibility = accessibility
         options.authenticationPolicy = authenticationPolicy

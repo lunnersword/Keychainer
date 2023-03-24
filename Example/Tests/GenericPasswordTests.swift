@@ -528,7 +528,7 @@ class GenericPasswordSpec: QuickSpec {
                 context.touchIDAuthenticationAllowableReuseDuration = 5
 
                 keychain = keychain
-                    .accessibility(.whenUnlockedThisDeviceOnly, authenticationPolicy: .userPresence)
+                    .accessibility(.whenUnlockedThisDeviceOnly, authenticationPolicy: nil)
                     .authenticationContext(context)
             }
             afterSuite {
