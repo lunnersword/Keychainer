@@ -1,5 +1,5 @@
 PODS:
-  - Keychainer (0.1.5)
+  - Keychainer (0.1.6)
   - Nimble (11.2.1)
   - Quick (6.1.0)
 
@@ -18,7 +18,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Keychainer: 88f22c5741c8f2a71fa60c5fa5f27574275ad949
+  Keychainer: 1dea413b10c9b0e64a9a558ce5f4dad5c092480a
   Nimble: 516ac503a0fafaa8e41dbb4a70a61be421fa893a
   Quick: 6676ffb409bf04abba2ff23902af2407bfc6ac90
 
