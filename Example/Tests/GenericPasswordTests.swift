@@ -175,6 +175,8 @@ class GenericPasswordSpec: QuickSpec {
                             expect(accountItem).notTo(beNil())
                             expect(accountItem?.username).to(equal(account.username))
                             expect(accountItem?.password).to(equal(account.password))
+                            let password = keychain[account.username]
+                            expect(password).to(equal(account.password))
                         } catch {
                             expect(error).to(beNil())
                         }
@@ -196,6 +198,9 @@ class GenericPasswordSpec: QuickSpec {
                     do {
                         let account = try keychain.item("notExistingKey")?.account
                         expect(account).to((beNil()))
+
+                        let password = keychain["notExistingKey"]
+                        expect(password).to((beNil()))
                     } catch {
                         expect(error).to(beNil())
                     }
@@ -219,6 +224,14 @@ class GenericPasswordSpec: QuickSpec {
                             expect(backed).notTo(beNil())
                             expect(backed?.username).to(equal(account.username))
                             expect(backed?.password).to(equal(account.password))
+
+                            keychain[user] = password
+                            let updatedPassword = keychain[user]
+                            expect(updatedPassword).to(equal(password))
+
+                            keychain[user] = account.password
+                            let backedPassword = keychain[user]
+                            expect(backedPassword).to(equal(account.password))
                         } catch {
                             expect(error).to(beNil())
                         }
@@ -288,6 +301,11 @@ class GenericPasswordSpec: QuickSpec {
                         let got = try keychain.item(newAccount.username)?.account
                         expect(got).toNot(beNil())
                         expect(got) == newAccount
+
+                        keychain[accountNotInKeychain.username] = accountNotInKeychain.password
+                        let shouldUpdated = keychain[accountNotInKeychain.username]
+                        expect(shouldUpdated) == accountNotInKeychain.password
+
                     } catch {
                         expect(error).to(beNil())
                     }
@@ -304,6 +322,11 @@ class GenericPasswordSpec: QuickSpec {
                             let got = try keychain.item(account.username)?.account
                             expect(got).notTo(beNil())
                             expect(got?.password) == account.password + "seted"
+
+                            keychain[account.username] = account.password + "sseted"
+                            let new = keychain[account.username]
+                            expect(new).notTo(beNil())
+                            expect(new) == account.password + "sseted"
                         }
                     } catch {
                         expect(error).to(beNil())
@@ -321,6 +344,11 @@ class GenericPasswordSpec: QuickSpec {
                             let got = try keychain.item(account.username)?.account
                             expect(got).notTo(beNil())
                             expect(got) == account
+
+                            keychain[account.username] = account.password
+                            let new = keychain[account.username]
+                            expect(new).notTo(beNil())
+                            expect(new) == account.password
                         }
 
                         let setedAccounts = try keychain.allItems()?.compactMap{ $0.account }

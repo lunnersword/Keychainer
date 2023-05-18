@@ -72,6 +72,8 @@ public protocol PasswordKeychain {
     // get the data of Keychain Item only (kSecReturnData = true)
     func data(_ key: String) throws -> Data?
 
+    subscript(key: String) -> String? { get set}
+
     // add item if not existing
     func add(_ key: String, value: Data) throws
     func add(_ key: String, value: String) throws
@@ -222,6 +224,24 @@ extension PasswordKeychain {
         let attributes = T(attributes: result)
         let item = KeychainItem<T>(itemClass: options.securityClass.itemClass!, data: data, attributes: attributes)
         return item
+    }
+
+    subscript(key: String) -> String? {
+        get {
+            return try? string(key)
+        }
+
+        set {
+            if let value = newValue {
+                do {
+                    try set(key, value: value)
+                } catch {}
+            } else {
+                do {
+                    try delete(key)
+                } catch {}
+            }
+        }
     }
 
     func string(_ key: String) throws -> String? {
